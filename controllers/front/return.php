@@ -107,7 +107,7 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
                     $order->setCurrentState((int)Configuration::get('PS_OS_ERROR'));
                     $this->restoreCart($order->id);
                     PrestaShopLogger::addLog('Order was rejected. Redirecting to failure...');
-                    $this->redirectToFailTransaction($cart, $order);
+                    $this->redirectToFailure();
                 }
             }
             //Otherwise, we redirect the user to our very own failure page, since apparently ps doesn't have any payment error page.
@@ -180,13 +180,6 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
         $customer = $order->getCustomer();
         PrestaShopLogger::addLog('Customer...'.json_encode($customer));
         Tools::redirect('index.php?controller=order-confirmation&id_cart='.$cart->id.'&id_module='.$this->module->id.'&id_order='.$order->id.'&key='.$customer->secure_key.'&status=OPEN');
-    }
-
-    private function redirectToFailTransaction($cart, $order){
-        PrestaShopLogger::addLog('Redireccionando compra correcta...');
-        $customer = $order->getCustomer();
-        PrestaShopLogger::addLog('Customer...'.json_encode($customer));
-        Tools::redirect('index.php?controller=order-confirmation&id_cart='.$cart->id.'&id_module='.$this->module->id.'&id_order='.$order->id.'&key='.$customer->secure_key.'&status=ERR');
     }
     
     private function redirectToFailure($params = array()){
