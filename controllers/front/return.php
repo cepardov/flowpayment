@@ -104,6 +104,7 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
                     $this->redirectToSuccess($cart, $order);
                 }
                 else{
+                    $order->setCurrentState((int)Configuration::get('PS_OS_ERROR'));
                     $this->restoreCart($order->id);
                     PrestaShopLogger::addLog('Order was rejected. Redirecting to failure...');
                     $this->redirectToFailure();
