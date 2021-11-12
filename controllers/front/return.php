@@ -78,7 +78,7 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
             }*/
             PrestaShopLogger::addLog('[Return] obtener orden...');
             $order = new Order(Order::getOrderByCartId($cart->id));
-            PrestaShopLogger::addLog('[Return] orden obtenida '.$order);
+            //PrestaShopLogger::addLog('[Return] orden obtenida '.$order);
 
             //If for some reason the confirmation callback was never called. We validate the order right here.
             
