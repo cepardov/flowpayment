@@ -77,8 +77,8 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
                 $this->setUpProductionEnvSimulation($status, $response);
             }*/
 
-            //$order = new Order(Order::getOrderByCartId($cart->id));
-            //PrestaShopLogger::addLog('[return] order 2: '.json_encode($order));
+            $order = new Order(Order::getOrderByCartId($cart->id));
+            PrestaShopLogger::addLog('[return] order 2: '.json_encode($order));
 
             //If for some reason the confirmation callback was never called. We validate the order right here.
             
