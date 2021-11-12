@@ -74,8 +74,9 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
                 PrestaShopLogger::addLog('Testing environment detected, setting up simulation...');
                 $this->setUpProductionEnvSimulation($status, $response);
             }*/
-
+            PrestaShopLogger::addLog('[Return] obtener orden...');
             $order = new Order(Order::getOrderByCartId($cart->id));
+            PrestaShopLogger::addLog('[Return] orden obtenida '.$order);
 
             //If for some reason the confirmation callback was never called. We validate the order right here.
             
@@ -95,6 +96,7 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
     
                 if($this->isPaidInFlow($status)){                    
                     PrestaShopLogger::addLog('Everything went right. Redirecting to the success page.');
+                    $order->setCurrentState((int)Configuration::get('PS_OS_PAYMENT'));
                     $this->redirectToSuccess($cart, $order);
                 }
                 else{
