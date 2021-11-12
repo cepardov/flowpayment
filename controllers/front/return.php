@@ -41,7 +41,6 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
             $orderStatusPaid = (int)Configuration::get('PS_OS_PAYMENT');
             $orderStatusPending = (int)Configuration::get('FLOW_PAYMENT_PENDING');
             $orderStatusRejected = (int)Configuration::get('PS_OS_ERROR');
-            $orderStatusCanceled = (int)Configuration::get('PS_OS_CANCELED');
             PrestaShopLogger::addLog('[return] orderStatusPending: '.$orderStatusPending);
 
             $serviceName = "payment/getStatus";
@@ -68,6 +67,7 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
             if($this->userCanceledPayment($status, $response)){
                 PrestaShopLogger::addLog('The user canceled the payment. Redirecting to the checkout...');
                 //$this->restoreCart($order->id);
+                $this->cancelCart($order->id);
                 //Redirecting to the checkout
                 Tools::redirect('order');
             }
@@ -123,8 +123,13 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
         }
     }
 
+    private function cancelCart($order) {
+        PrestaShopLogger::addLog('Cancelling cart...');
+        $order->setCurrentState((int)Configuration::get('PS_OS_CANCELED'));
+        restoreCart($order->id);
+    }
+
     private function restoreCart($orderId){
-        
         PrestaShopLogger::addLog('Restoring cart...');
         $cart = new Cart(Cart::getCartIdByOrderId($orderId));
         $cartDuplicate = $cart->duplicate();
