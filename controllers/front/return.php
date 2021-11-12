@@ -53,7 +53,8 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
 
             $order = new Order(Order::getOrderByCartId($orderNumber));
             PrestaShopLogger::addLog('[Return] order: '.json_encode($order));
-            $cart = new Cart(Cart::getCartIdByOrderId($order->id));
+            $cart = Cart::getCartByOrderId($order->id);
+            //$cart = new Cart(Cart::getCartIdByOrderId($order->id));
             
             $status = $response["status"];
             $amount = (int)$response["amount"];
@@ -79,7 +80,7 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
                 $this->setUpProductionEnvSimulation($status, $response);
             }*/
             //PrestaShopLogger::addLog('[Return] obtener orden...');
-            //$order = new Order(Order::getOrderByCartId($cart->id));
+            $order = new Order(Order::getOrderByCartId($cart->id));
             //PrestaShopLogger::addLog('[Return] orden obtenida '.$order);
 
             //If for some reason the confirmation callback was never called. We validate the order right here.
