@@ -48,7 +48,9 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
             $response = $flowApi->send($serviceName, $params, "GET");
             PrestaShopLogger::addLog('Flow response: '.json_encode($response));
 
-            $order = new Order((int) $response['commerceOrder']);
+            //$order = new Order((int) $response['commerceOrder']);
+            $order = new Order(Order::getOrderByCartId($response['commerceOrder']));
+            PrestaShopLogger::addLog('[Return] order: '.json_encode($order));
             $cart = new Cart(Cart::getCartIdByOrderId($order->id));
             
             $status = $response["status"];
