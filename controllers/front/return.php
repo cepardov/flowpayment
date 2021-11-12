@@ -50,7 +50,7 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
 
             //$order = new Order((int) $response['commerceOrder']);
             $orderNumber = (int) $response['commerceOrder'];
-            PrestaShopLogger::addLog('[Return] orderNumber: '.$orderNumber);
+
             $order = new Order(Order::getOrderByCartId($orderNumber));
             PrestaShopLogger::addLog('[Return] order: '.json_encode($order));
             $cart = new Cart(Cart::getCartIdByOrderId($order->id));
@@ -83,7 +83,9 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
             //PrestaShopLogger::addLog('[Return] orden obtenida '.$order);
 
             //If for some reason the confirmation callback was never called. We validate the order right here.
-            
+            PrestaShopLogger::addLog('Order State: '.$order->valid);
+            PrestaShopLogger::addLog('Order pending: '.$orderStatusPending);
+            PrestaShopLogger::addLog('Order current: '.$order->getCurrentState());
             //If the order has a valid status, this is: Either paid or pending
             if($order->valid || $order->getCurrentState() == $orderStatusPending ){
 
