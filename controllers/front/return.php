@@ -98,7 +98,7 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
     
                 if($this->isPaidInFlow($status)){                    
                     PrestaShopLogger::addLog('Everything went right. Redirecting to the success page.');
-                    $order->setCurrentState((int)Configuration::get('PS_OS_PAYMENT'));
+                    //$order->setCurrentState((int)Configuration::get('PS_OS_PAYMENT'));
                     $this->redirectToSuccess($cart, $order);
                 }
                 else{
