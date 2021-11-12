@@ -91,6 +91,7 @@ class FlowPaymentWPCreateModuleFrontController extends ModuleFrontController
             $flowApi = PrestaFlowWP::getFlowApiWP();
             Logger::addLog('Calling flow service from create(): '.$serviceName.' with params: '.json_encode($params));
             $response = $flowApi->send($serviceName, $params, "POST");
+            Logger::addLog('Flow response: '.json_encode($response));
 
             if (!isset($response["url"]) || !isset($response["token"])) {
                 

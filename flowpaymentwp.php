@@ -58,7 +58,7 @@ class FlowPaymentWP extends PaymentModule
             $orderState->name = array();
             $orderState->module_name = $this->name;
             $orderState->send_email = false;
-            $orderState->color = 'RoyalBlue';
+            $orderState->color = 'blue';
             $orderState->hidden = false;
             $orderState->delivery = false;
             $orderState->logable = false;
@@ -66,7 +66,7 @@ class FlowPaymentWP extends PaymentModule
             $orderState->paid = false;
 
             foreach (Language::getLanguages() as $language) {
-                $orderState->template[$language['id_lang']] = 'order_changed';
+                $orderState->template[$language['id_lang']] = 'payment';
                 $orderState->name[$language['id_lang']] = 'Pending Payment';
             }
 

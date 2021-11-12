@@ -38,12 +38,6 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
                 throw new Exception("No se recibio el token", 1);
             }
 
-            $orderStatusPaid = (int)Configuration::get('PS_OS_PAYMENT');
-            $orderStatusPending = (int)Configuration::get('FLOW_PAYMENT_PENDING');
-            $orderStatusRejected = (int)Configuration::get('PS_OS_ERROR');
-            $orderStatusCanceled = (int)Configuration::get('PS_OS_CANCELED');
-            PrestaShopLogger::addLog('Order pending: '.$orderStatusPending);
-
             $serviceName = "payment/getStatus";
 
             $token = filter_input(INPUT_POST, 'token');
@@ -55,12 +49,7 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
             PrestaShopLogger::addLog('Flow response: '.json_encode($response));
 
             $order = new Order((int) $response['commerceOrder']);
-            //$orderNumber = (int) $response['commerceOrder'];
-
-            $order = new Order(Order::getOrderByCartId($order->id));
-            //PrestaShopLogger::addLog('[Return] order: '.json_encode($order));
-            $cart = Cart::getCartByOrderId($order->id);
-            //$cart = new Cart(Cart::getCartIdByOrderId($order->id));
+            $cart = new Cart(Cart::getCartIdByOrderId($order->id));
             
             $status = $response["status"];
             $amount = (int)$response["amount"];
@@ -68,6 +57,11 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
             $orderTotal = (int)($cart->getOrderTotal(true, Cart::BOTH));
             
             $orderTotalAdditional = (int)($orderTotal + round(($orderTotal * $recharge)/100.0));
+    
+            $orderStatusPaid = (int)Configuration::get('PS_OS_PAYMENT');
+            $orderStatusPending = (int)Configuration::get('FLOW_PAYMENT_PENDING');
+            $orderStatusRejected = (int)Configuration::get('PS_OS_ERROR');
+            $orderStatusCanceled = (int)Configuration::get('PS_OS_CANCELED');
 
             if($this->userCanceledPayment($status, $response)){
                 PrestaShopLogger::addLog('The user canceled the payment. Redirecting to the checkout...');
@@ -80,13 +74,11 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
                 PrestaShopLogger::addLog('Testing environment detected, setting up simulation...');
                 $this->setUpProductionEnvSimulation($status, $response);
             }*/
-            //PrestaShopLogger::addLog('[Return] obtener orden...');
+
             $order = new Order(Order::getOrderByCartId($cart->id));
-            //PrestaShopLogger::addLog('[Return] orden obtenida '.$order);
 
             //If for some reason the confirmation callback was never called. We validate the order right here.
-            PrestaShopLogger::addLog('Order State: '.$order->valid);
-            PrestaShopLogger::addLog('Order current: '.$order->getCurrentState());
+            
             //If the order has a valid status, this is: Either paid or pending
             if($order->valid || $order->getCurrentState() == $orderStatusPending ){
 
@@ -103,7 +95,6 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
     
                 if($this->isPaidInFlow($status)){                    
                     PrestaShopLogger::addLog('Everything went right. Redirecting to the success page.');
-                    //$order->setCurrentState((int)Configuration::get('PS_OS_PAYMENT'));
                     $this->redirectToSuccess($cart, $order);
                 }
                 else{
