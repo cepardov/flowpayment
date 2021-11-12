@@ -66,8 +66,8 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
 
             if($this->userCanceledPayment($status, $response)){
                 PrestaShopLogger::addLog('The user canceled the payment. Redirecting to the checkout...');
-                //$this->restoreCart($order->id);
-                $this->cancelCart($order->id);
+                $order->setCurrentState((int)Configuration::get('PS_OS_CANCELED'));
+                $this->restoreCart($order->id);
                 //Redirecting to the checkout
                 Tools::redirect('order');
             }
@@ -121,12 +121,6 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
             PrestaShopLogger::addLog('There has been an unexpected error. Error code: '.$e->getCode(). ' - Message: '.$e->getMessage());
             Tools::redirect($this->context->link->getModuleLink('flowpaymentwp', 'error', array('code' => $e->getCode())));
         }
-    }
-
-    private function cancelCart($order) {
-        PrestaShopLogger::addLog('Cancelling cart...');
-        $order->setCurrentState((int)Configuration::get('PS_OS_CANCELED'));
-        restoreCart($order->id);
     }
 
     private function restoreCart($orderId){
