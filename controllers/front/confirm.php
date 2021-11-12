@@ -50,6 +50,8 @@ class FlowPaymentWPConfirmModuleFrontController extends ModuleFrontController
             $order = new Order((int) $response['commerceOrder']);
             $cart = new Cart(Cart::getCartIdByOrderId($order->id));
 
+            Logger::addLog('Cart: '.json_encode($cart));
+
             if (!$cart) {
                 throw new Exception('The order does not exists.');
             }
