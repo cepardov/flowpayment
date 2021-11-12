@@ -177,7 +177,9 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
     
     private function redirectToSuccess($cart, $order){
         PrestaShopLogger::addLog('Redireccionando compra correcta...');
-        Tools::redirect('index.php?controller=order-confirmation&id_cart='.$cart->id.'&id_module='.$this->module->id.'&id_order='.$order->id.'&key='.$cart->secure_key);
+        $customer = $order->getCustomer();
+        PrestaShopLogger::addLog('Customer...'.json_encode($customer));
+        Tools::redirect('index.php?controller=order-confirmation&id_cart='.$cart->id.'&id_module='.$this->module->id.'&id_order='.$order->id.'&key='.$customer->secure_key.'&status=OPEN');
     }
     
     private function redirectToFailure($params = array()){
