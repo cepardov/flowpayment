@@ -92,7 +92,8 @@ class FlowPaymentWPConfirmModuleFrontController extends ModuleFrontController
             if($order->getCurrentState() === Configuration::get('FLOW_PAYMENT_PENDING')){
                 PrestaShopLogger::addLog('Changing the order status');
                 
-                if($orderStatus !== Configuration::get('FLOW_PAYMENT_PENDING')){                    
+                if($orderStatus !== Configuration::get('FLOW_PAYMENT_PENDING')){
+                    PrestaShopLogger::addLog('Changing the order status '.$orderStatus);
                     $order->setCurrentState($orderStatus);
                 }
             }
