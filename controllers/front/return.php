@@ -30,7 +30,7 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
 
         parent::initContent();
         $this->setTemplate('module:flowpaymentwp/views/templates/front/confirmation.tpl');
-        $this->returnPayment();
+        //$this->returnPayment();
     }
 
     private function returnPayment()
