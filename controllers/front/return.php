@@ -29,7 +29,7 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
         $this->display_column_right = false;
 
         parent::initContent();
-        $this->setTemplate('module:flowpaymentwp/views/templates/front/confirmation.tpl');
+        //$this->setTemplate('module:flowpaymentwp/views/templates/front/confirmation.tpl');
         $this->returnPayment();
     }
 
