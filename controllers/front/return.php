@@ -181,7 +181,7 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
         PrestaShopLogger::addLog('urlOrderConfirmation: '.$urlOrderConfirmation);
         //Tools::redirect($urlOrderConfirmation);
 
-        $mod_id = Module::getInstanceByName($order->module);
+        $mod_id = $this->module->id;
 
         if (Tools::getValue('return') == 'ok') {
             Tools::redirect(
