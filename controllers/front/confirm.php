@@ -18,6 +18,10 @@ require_once(dirname(__FILE__) . "/../../flowpaymentwp.php");
 class FlowPaymentWPConfirmModuleFrontController extends ModuleFrontController
 {
 
+    public function __construct(){
+        parent::__construct();
+    }
+
     public function initContent(){
         parent::initContent();
         $this->postProcess();
@@ -145,19 +149,7 @@ class FlowPaymentWPConfirmModuleFrontController extends ModuleFrontController
         PrestaShopLogger::addLog('Customer...'.json_encode($customer));
         $urlOrderConfirmation = 'index.php?controller=order-confirmation&id_cart='.$cart->id.'&id_module='.$this->module->id.'&id_order='.$order->id.'&key='.$customer->secure_key;
         PrestaShopLogger::addLog('urlOrderConfirmation: '.$urlOrderConfirmation);
-        //Tools::redirect($urlOrderConfirmation);
-
-        $mod_id = Module::getInstanceByName($order->module);
-
-        if (Tools::getValue('return') == 'ok') {
-            Tools::redirect(
-                Tools::getShopDomainSsl(
-                    true,
-                    true
-                ) . __PS_BASE_URI__ . 'index.php?controller=order-confirmation&id_cart=' . $cart->id
-                . '&id_module=' . (int)$mod_id->id . '&id_order=' . $order->id . '&key=' . $customer->secure_key
-            );
-        }
+        Tools::redirect($urlOrderConfirmation);
     }
 
     private function redirectToFailure($params = array()){

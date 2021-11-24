@@ -41,18 +41,16 @@ class FlowPaymentWPCreateModuleFrontController extends ModuleFrontController
             $additionalAmount = round(($orderAmount * $recharge)/100.0);
             $amount = $orderAmount + $additionalAmount;
 
-            $flowPaymentWP = new FlowPaymentWP();
-
-            $flowPaymentWP->validateOrder(
+            $this->module->validateOrder(
                 $cart->id,
                 Configuration::get('FLOW_PAYMENT_PENDING'),
                 $orderAmount,
-                $flowPaymentWP->displayName,
+                $this->module->displayName,
                 null,
                 array(),
                 null,
                 false,
-                self::$cart->secure_key
+                $cart->secure_key
             );
             
             $order = new Order(Order::getOrderByCartId($cart->id));
