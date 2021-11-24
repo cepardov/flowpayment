@@ -19,10 +19,6 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
 {
     public $ssl = true;
 
-    public function __construct(){
-        parent::__construct();
-    }
-
     public function initContent()
     {
         $this->display_column_left = false;
