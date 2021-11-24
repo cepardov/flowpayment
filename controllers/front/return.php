@@ -179,20 +179,7 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
         PrestaShopLogger::addLog('Customer...'.json_encode($customer));
         $urlOrderConfirmation = 'index.php?controller=order-confirmation&id_cart='.$cart->id.'&id_module='.$this->module->id.'&id_order='.$order->id.'&key='.$customer->secure_key;
         PrestaShopLogger::addLog('urlOrderConfirmation: '.$urlOrderConfirmation);
-        //Tools::redirect($urlOrderConfirmation);
-
-        $mod_id = $this->module->id;
-
-        if (Tools::getValue('return') == 'ok') {
-            Tools::redirect(
-                Tools::getShopDomainSsl(
-                    true,
-                    true
-                ) . __PS_BASE_URI__ . 'index.php?controller=order-confirmation&id_cart=' . $cart->id
-                . '&id_module=' . (int)$mod_id->id . '&id_order=' . $order->id . '&key=' . $customer->secure_key
-                . '&status=OPEN'
-            );
-        }
+        Tools::redirect($urlOrderConfirmation);
     }
     
     private function redirectToFailure($params = array()){
