@@ -20,9 +20,7 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
     public $ssl = true;
 
     public function initContent() {
-
         parent::initContent();
-        //$this->setTemplate('module:flowpaymentwp/views/templates/front/confirmation.tpl');
         $this->returnPayment();
     }
 

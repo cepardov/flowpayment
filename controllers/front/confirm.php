@@ -21,7 +21,6 @@ class FlowPaymentWPConfirmModuleFrontController extends ModuleFrontController
 
     public function initContent() {
         parent::initContent();
-        //$this->setTemplate('module:flowpaymentwp/views/templates/front/confirmation.tpl');
         $this->postProcess();
     }
 
