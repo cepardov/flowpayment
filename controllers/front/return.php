@@ -190,7 +190,6 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
                     true
                 ) . __PS_BASE_URI__ . 'index.php?controller=order-confirmation&id_cart=' . $cart->id
                 . '&id_module=' . (int)$mod_id->id . '&id_order=' . $order->id . '&key=' . $customer->secure_key
-                . '&status=OPEN'
             );
         }
     }
