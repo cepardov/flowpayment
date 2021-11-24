@@ -17,7 +17,7 @@ require_once(dirname(__FILE__) . "/../../flowpaymentwp.php");
 
 class FlowPaymentWPConfirmModuleFrontController extends ModuleFrontController
 {
-    public $ssl = true;
+    //public $ssl = true;
 
     public function initContent() {
         parent::initContent();

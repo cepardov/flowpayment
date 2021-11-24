@@ -17,7 +17,7 @@ require_once(dirname(__FILE__) . "/../../flowpaymentwp.php");
 
 class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
 {
-    public $ssl = true;
+    //public $ssl = true;
 
     public function initContent() {
         parent::initContent();
@@ -112,7 +112,6 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
                 PrestaShopLogger::addLog('Order was rejected. Redirecting to failure...');
                 $this->redirectToFailure();
             }
-
         } catch (Exception $e) {
             PrestaShopLogger::addLog('There has been an unexpected error. Error code: '.$e->getCode(). ' - Message: '.$e->getMessage());
             Tools::redirect($this->context->link->getModuleLink('flowpaymentwp', 'error', array('code' => $e->getCode())));
