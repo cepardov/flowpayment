@@ -113,9 +113,12 @@ class FlowPaymentWPConfirmModuleFrontController extends ModuleFrontController
                 PrestaShopLogger::addLog('Order was rejected. Redirecting to failure...');
                 $this->redirectToFailure();
             }
+
+            return;
         }catch(Exception $e){
             PrestaShopLogger::addLog('There has been an unexpected error. Error code: '.$e->getCode(). ' - Message: '.$e->getMessage());
             Tools::redirect($this->context->link->getModuleLink('flowpaymentwp', 'error', array('code' => $e->getCode())));
+            return;
         }
     }
 
