@@ -17,8 +17,12 @@ require_once(dirname(__FILE__) . "/../../flowpaymentwp.php");
 
 class FlowPaymentWPConfirmModuleFrontController extends ModuleFrontController
 {
+    public $ssl = true;
 
     public function initContent(){
+        $this->display_column_left = false;
+        $this->display_column_right = false;
+
         parent::initContent();
         $this->postProcess();
     }
@@ -155,7 +159,7 @@ class FlowPaymentWPConfirmModuleFrontController extends ModuleFrontController
                     true,
                     true
                 ) . __PS_BASE_URI__ . 'index.php?controller=order-confirmation&id_cart=' . $cart->id
-                . '&id_module=' . (int)$mod_id->id . '&id_order=' . $order->id . '&key=' . $customer->secure_key
+                . '&id_module=' . (int)$mod_id->id . '&id_order=' . $order->id . '&key=' . $customer->secure_keyf
             );
         }
     }
