@@ -24,36 +24,42 @@ class FlowPaymentWPConfirmModuleFrontController extends ModuleFrontController
 
     public function initContent(){
         parent::initContent();
-        $this->setTemplate('module:flowpaymentwp/views/templates/front/confirmation.tpl');
+        $this->postProcess();
     }
 
     public function postProcess(){
 
         try{
 
-            PrestaShopLogger::addLog('Entering the confirm callback', 1);
+            PrestaShopLogger::addLog('[Confirm] Entering the confirm callback', 1);
         
             if (!Tools::getIsset("token")) {
                 throw new Exception("No token received", 1);
             }
 
+            $orderStatusPaid = (int)Configuration::get('PS_OS_PAYMENT');
+            $orderStatusPending = (int)Configuration::get('FLOW_PAYMENT_PENDING');
+            $orderStatusRejected = (int)Configuration::get('PS_OS_ERROR');
+
+            $serviceName = 'payment/getStatus';
+
             $token = filter_input(INPUT_POST, 'token');
             $params = array( "token" => $token );
-            $serviceName = 'payment/getStatus';
             
             Logger::addLog('Calling flow service from confirm(): '.$serviceName.' with params: '.json_encode($params));
             $flowApi = PrestaFlowWP::getFlowApiWP();
             $response = $flowApi->send($serviceName, $params, "GET");
             Logger::addLog('Flow response: '.json_encode($response));
 
-            $amount = (int)$response["amount"];
             $order = new Order((int) $response['commerceOrder']);
             $cart = new Cart(Cart::getCartIdByOrderId($order->id));
 
             if (!$cart) {
                 throw new Exception('The order does not exists.');
             }
-        
+
+            $status = $response['status'];
+            $amount = (int)$response["amount"];
             $recharge = (float) Configuration::get('FLOW_WP_ADDITIONAL');
             $orderTotal = round((float) $cart->getOrderTotal(true, Cart::BOTH));
             $orderTotalWithAdditional = $orderTotal + round(($orderTotal * $recharge) / 100.0);
@@ -62,47 +68,93 @@ class FlowPaymentWPConfirmModuleFrontController extends ModuleFrontController
                 throw new Exception('The amount has been altered. Aborting...');
             }
 
-            $status = $response['status'];
-
-            /*if($this->isTesting($response)){
-                PrestaShopLogger::addLog('Testing environment detected, setting up simulation...');
-                $this->setUpProductionEnvSimulation($status);
-            }*/
-
-            if($this->isPendingInFlow($status)){
-                Logger::addLog('Setting order as pending...');
-                $orderStatus = Configuration::get('FLOW_PAYMENT_PENDING');
-            }
-            elseif($this->isPaidInFlow($status)){
-                Logger::addLog('Setting order as paid...');
-                $orderStatus = Configuration::get('PS_OS_PAYMENT');
-            }
-            elseif($this->isCanceledInFlow($status)){
-                Logger::addLog('Setting order as canceled...');
-                $orderStatus = Configuration::get('PS_OS_CANCELED');
-            }
-            else{
-                Logger::addLog('Setting order as rejected...');
-                $orderStatus = Configuration::get('PS_OS_ERROR');
+            if($this->userCanceledPayment($status, $response)){
+                PrestaShopLogger::addLog('The user canceled the payment. Redirecting to the checkout...');
+                $order->setCurrentState((int)Configuration::get('PS_OS_CANCELED'));
+                $this->restoreCart($order->id);
+                //Redirecting to the checkout
+                Tools::redirect('order');
             }
 
-            //If the order already has already the pending state, it means it this was previously called, therefore
-            //we update the status.
+            $order = new Order(Order::getOrderByCartId($cart->id));
 
-            if($order->getCurrentState() === Configuration::get('FLOW_PAYMENT_PENDING')){
-                PrestaShopLogger::addLog('Changing the order status');
-                
-                if($orderStatus !== Configuration::get('FLOW_PAYMENT_PENDING')){                    
-                    $order->setCurrentState($orderStatus);
+            //If for some reason the confirmation callback was never called. We validate the order right here.
+
+            //If the order has a valid status, this is: Either paid or pending
+
+            if($order->valid || $order->getCurrentState() == $orderStatusPending ) {
+
+
+                if ($this->userGeneratedCoupon($status, $response)) {
+                    PrestaShopLogger::addLog('The user generated a coupon. Redirecting there...');
+
+                    //If the there's any return url configured, we redirect there.
+                    if (!empty(Configuration::get('FLOW_WP_RETURN_URL'))) {
+                        Tools::redirect(Configuration::get('FLOW_WP_RETURN_URL'));
+                    }
+                    Tools::redirect($this->context->link->getModuleLink('flowpaymentwp', 'coupon', array()));
+                }
+
+                if ($this->isPaidInFlow($status)) {
+                    PrestaShopLogger::addLog('Everything went right. Redirecting to the success page.');
+                    $order->setCurrentState((int)Configuration::get('PS_OS_PAYMENT'));
+                    $this->redirectToSuccess($cart, $order);
+                } else {
+                    $order->setCurrentState((int)Configuration::get('PS_OS_ERROR'));
+                    $this->restoreCart($order->id);
+                    PrestaShopLogger::addLog('Order was rejected. Redirecting to failure...');
+                    $this->redirectToFailure();
                 }
             }
-            
-            return;
-        }catch(Exception $e){
+            //Otherwise, we redirect the user to our very own failure page, since apparently ps doesn't have any payment error page.
+            else{
 
-            Logger::addLog('There has been an unexpected error. Code: '.$e->getCode(). ' Message: '.$e->getMessage());
-            return;
+                $this->restoreCart($order->id);
+                PrestaShopLogger::addLog('Order was rejected. Redirecting to failure...');
+                $this->redirectToFailure();
+            }
+        }catch(Exception $e){
+            PrestaShopLogger::addLog('There has been an unexpected error. Error code: '.$e->getCode(). ' - Message: '.$e->getMessage());
+            Tools::redirect($this->context->link->getModuleLink('flowpaymentwp', 'error', array('code' => $e->getCode())));
         }
+    }
+
+    private function userCanceledPayment($status, $flowPaymentData){
+        return $this->isPendingInFlow($status)
+            && empty($flowPaymentData['paymentData']['media'])
+            && empty($flowPaymentData['pending_info']['media']);
+    }
+
+    private function userGeneratedCoupon($status, $flowPaymentData){
+
+        return $this->isPendingInFlow($status)
+            && !empty($flowPaymentData['pending_info']['media']
+                && empty($flowPaymentData['paymentData']['media']));
+    }
+
+    private function restoreCart($orderId){
+        PrestaShopLogger::addLog('Restoring cart...');
+        $cart = new Cart(Cart::getCartIdByOrderId($orderId));
+        $cartDuplicate = $cart->duplicate();
+        $this->context->cookie->id_cart = $cartDuplicate['cart']->id;
+        $context = $this->context;
+        $context->cart = $cartDuplicate['cart'];
+        CartRule::autoAddToCart($context);
+        $this->context->cookie->write();
+    }
+
+    private function redirectToSuccess($cart, $order){
+        PrestaShopLogger::addLog('Redireccionando compra correcta...');
+        $customer = $order->getCustomer();
+        PrestaShopLogger::addLog('Customer...'.json_encode($customer));
+        $urlOrderConfirmation = 'index.php?controller=order-confirmation&id_cart='.$cart->id.'&id_module='.$this->module->id.'&id_order='.$order->id.'&key='.$customer->secure_key;
+        PrestaShopLogger::addLog('urlOrderConfirmation: '.$urlOrderConfirmation);
+        Tools::redirect($urlOrderConfirmation);
+    }
+
+    private function redirectToFailure($params = array()){
+        PrestaShopLogger::addLog('Redireccionando compra erronea...');
+        Tools::redirect($this->context->link->getModuleLink('flowpaymentwp', 'paymentfailure', $params));
     }
 
     public function isPendingInFlow($status){
@@ -129,4 +181,21 @@ class FlowPaymentWPConfirmModuleFrontController extends ModuleFrontController
     private function setUpProductionEnvSimulation(&$status){
         $status = 1;
     }
+
+    /*if($this->isPendingInFlow($status)){
+                Logger::addLog('Setting order as pending...');
+                $orderStatus = Configuration::get('FLOW_PAYMENT_PENDING');
+            }
+            elseif($this->isPaidInFlow($status)){
+                Logger::addLog('Setting order as paid...');
+                $orderStatus = Configuration::get('PS_OS_PAYMENT');
+            }
+            elseif($this->isCanceledInFlow($status)){
+                Logger::addLog('Setting order as canceled...');
+                $orderStatus = Configuration::get('PS_OS_CANCELED');
+            }
+            else{
+                Logger::addLog('Setting order as rejected...');
+                $orderStatus = Configuration::get('PS_OS_ERROR');
+            }*/
 }

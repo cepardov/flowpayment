@@ -32,7 +32,7 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
 
         try {
 
-            PrestaShopLogger::addLog('Entering the return callback...');
+            PrestaShopLogger::addLog('[return] Entering the return callback...',1);
 
             if (!Tools::getIsset("token")) {
                 throw new Exception("No se recibio el token", 1);
@@ -41,28 +41,33 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
             $orderStatusPaid = (int)Configuration::get('PS_OS_PAYMENT');
             $orderStatusPending = (int)Configuration::get('FLOW_PAYMENT_PENDING');
             $orderStatusRejected = (int)Configuration::get('PS_OS_ERROR');
-            PrestaShopLogger::addLog('[return] orderStatusPending: '.$orderStatusPending);
 
             $serviceName = "payment/getStatus";
 
             $token = filter_input(INPUT_POST, 'token');
             $params = array( "token" => $token );
 
+            Logger::addLog('Calling flow service from confirm(): '.$serviceName.' with params: '.json_encode($params));
             $flowApi = PrestaFlowWP::getFlowApiWP();
-            PrestaShopLogger::addLog('Calling flow service from return(): '.$serviceName.' with params: '.json_encode($params));
             $response = $flowApi->send($serviceName, $params, "GET");
             PrestaShopLogger::addLog('Flow response: '.json_encode($response));
 
             $order = new Order((int) $response['commerceOrder']);
-            PrestaShopLogger::addLog('[return] order 1: '.json_encode($order));
             $cart = new Cart(Cart::getCartIdByOrderId($order->id));
+
+            if (!$cart) {
+                throw new Exception('The order does not exists.');
+            }
             
             $status = $response["status"];
             $amount = (int)$response["amount"];
             $recharge = (float)Configuration::get('FLOW_WP_ADDITIONAL');
             $orderTotal = (int)($cart->getOrderTotal(true, Cart::BOTH));
-            
-            $orderTotalAdditional = (int)($orderTotal + round(($orderTotal * $recharge)/100.0));
+            $orderTotalWithAdditional = $orderTotal + round(($orderTotal * $recharge) / 100.0);
+
+            if($amount != $orderTotalWithAdditional ){
+                throw new Exception('The amount has been altered. Aborting...');
+            }
 
             if($this->userCanceledPayment($status, $response)){
                 PrestaShopLogger::addLog('The user canceled the payment. Redirecting to the checkout...');
@@ -72,19 +77,12 @@ class FlowPaymentWPReturnModuleFrontController extends ModuleFrontController
                 Tools::redirect('order');
             }
 
-            /*if($this->isTesting($response)){
-                PrestaShopLogger::addLog('Testing environment detected, setting up simulation...');
-                $this->setUpProductionEnvSimulation($status, $response);
-            }*/
-
             $order = new Order(Order::getOrderByCartId($cart->id));
             PrestaShopLogger::addLog('[return] order 2: '.json_encode($order));
 
             //If for some reason the confirmation callback was never called. We validate the order right here.
             
             //If the order has a valid status, this is: Either paid or pending
-            PrestaShopLogger::addLog('[return] order valid: '.$order->valid);
-            PrestaShopLogger::addLog('[return] order getCurrentState: '.$order->getCurrentState());
             if($order->valid || $order->getCurrentState() == $orderStatusPending ){
 
                 
