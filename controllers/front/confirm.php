@@ -18,9 +18,9 @@ require_once(dirname(__FILE__) . "/../../flowpaymentwp.php");
 class FlowPaymentWPConfirmModuleFrontController extends ModuleFrontController
 {
 
-    /*public function __construct(){
+    public function __construct(){
         parent::__construct();
-    }*/
+    }
 
     public function initContent(){
         parent::initContent();
