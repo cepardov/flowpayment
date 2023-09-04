@@ -52,6 +52,7 @@ class FlowPaymentFlowReturnModuleFrontController extends ModuleFrontController
             $cart = new Cart(Cart::getCartIdByOrderId($order->id));
             
             $status = $response["status"];
+            PrestaShopLogger::addLog("Status: " + $status);
 
             $amount = (int)$response["amount"];
             $recharge = (float)Configuration::get('FLOW_ADDITIONAL');
@@ -65,10 +66,33 @@ class FlowPaymentFlowReturnModuleFrontController extends ModuleFrontController
             $orderStatusCanceled = (int)Configuration::get('PS_OS_CANCELED');
 
 
+            if ($order->valid || $order->getCurrentState() == $orderStatusPending ) {
+
+                // Status 1
+                if ($this->isPaidInFlow($status)) {
+                    if ($order->getCurrentState() == $orderStatusPending) {
+                        PrestaShopLogger::addLog("The confirmation page was not reached. Setting the order as paid.");
+                        $order->setCurrentState($orderStatusPaid);
+                    }
+
+                    PrestaShopLogger::addLog('Everything went right. Redirecting to the success page.');
+                    $this->redirectToSuccess($cart, $order);
+                } else if ($this->isRejectedInFlow($status)) {
+                    if ($order->getCurrentState() == $orderStatusPending) {
+                        PrestaShopLogger::addLog("The confirmation page was not reached. Setting the order as rejected.");
+                        $order->setCurrentState($orderStatusRejected);
+                    }
+                    $this->restoreCart($order->id);
+                    PrestaShopLogger::addLog('Payment error.');
+                    $this->redirectToFailure();
+                }
+            }
+
+
 
             // ========= nuevo
 
-            if ($this->userCanceledPayment($status, $response)) {
+            /*if ($this->userCanceledPayment($status, $response)) {
                 PrestaShopLogger::addLog('The user canceled the payment. Redirecting to the checkout...');
                 $this->restoreCart($order->id);
                 //Redirecting to the checkout
@@ -116,7 +140,7 @@ class FlowPaymentFlowReturnModuleFrontController extends ModuleFrontController
                 $this->restoreCart($order->id);
                 PrestaShopLogger::addLog('Order was rejected. Redirecting to failure...');
                 $this->redirectToFailure();
-            }
+            }*/
 
         } catch (Exception $e) {
             PrestaShopLogger::addLog('There has been an unexpected error. Error code: '.$e->getCode(). ' - Message: '.$e->getMessage());
