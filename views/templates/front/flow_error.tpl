@@ -7,10 +7,14 @@
             <h3 class="h3 card-title">{l s='Error'}</h3>
         </div>
         <div class="col-md-12">
-            <p>{l s='Ha ocurrido un error inesperado. Por favor, intentelo de nuevo.'}</p>
             {if $errorMessage }
-                <p>{$errorMessage}</p>                
+                <div class="alert alert-danger" role="alert">
+                {$errorMessage nofilter}
+                </div>      
             {/if}
+        </div>
+        <div class="col-md-12 cart-content-btn">
+            <a href="{$cart_url}" class="btn btn-primary"><i class="material-icons rtl-no-flip">&#xE876;</i>Ir a carro de compras</a>
         </div>
     </div>
 {/block}

@@ -1,12 +1,13 @@
 <?php
 
-class FlowPaymentWPErrorModuleFrontController extends ModuleFrontController{
+class FlowPaymentFlowErrorModuleFrontController extends ModuleFrontController{
     
     public function initContent(){
         parent::initContent();
-        $message = Tools::getValue('message');
+        $message = base64_decode(Tools::getValue('message'));
+     
         $this->context->smarty->assign('errorMessage', $message);
-        $this->setTemplate('module:flowpaymentwp/views/templates/front/flow_error.tpl');
+        $this->setTemplate('module:flowpaymentflow/views/templates/front/flow_error.tpl');
     }
     
     public function getErrorMsg($error_code){

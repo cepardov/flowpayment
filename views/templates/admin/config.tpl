@@ -14,20 +14,20 @@
 
 {if $noErrors and $isSubmitted}
 	<div class="bootstrap">
-		<div class="alert alert-success" role="alert">{l s="La configuración fue guardada correctamente." mod="flowpaymentwp"}</div>
+		<div class="alert alert-success" role="alert">{l s="La configuración fue guardada correctamente." mod="flowpaymentflow"}</div>
 	</div>
 {/if}
 
 {if !empty($errors) and $isSubmitted}
     <div class="bootstrap">
-        <div class="alert alert-danger" role="alert">{l s="Se detectaron errores en el formulario." mod="flowpaymentwp"}</div>
+        <div class="alert alert-danger" role="alert">{l s="Se detectaron errores en el formulario." mod="flowpaymentflow"}</div>
     </div>
 {/if}
 
-<h2>{l s='Pago con Flow usando Webpay' mod='flowpaymentwp'}</h2>
+<h2>{l s='Pago usando Flow' mod='flowpaymentflow'}</h2>
 
 <fieldset>
-    <legend><img src="../img/admin/warning.gif"/>{l s='Information' mod='flowpaymentwp'}</legend>
+    <legend><img src="../img/admin/warning.gif"/>{l s='Information' mod='flowpaymentflow'}</legend>
     <div class="margin-form">Module version: {$version}</div>
 
 </fieldset>
@@ -35,9 +35,9 @@
 <form action="{$post_url}" method="post" enctype="multipart/form-data" style="clear: both; margin-top: 10px;">
     <fieldset>
 
-        <legend><img src="../img/admin/contact.gif"/>{l s='Settings' mod='flowpaymentwp'}</legend>
+        <legend><img src="../img/admin/contact.gif"/>{l s='Settings' mod='flowpaymentflow'}</legend>
 
-        <label for="platformType">{l s='Plataforma de Flow' mod='flowpaymentwp'}</label>
+        <label for="platformType">{l s='Plataforma de Flow' mod='flowpaymentflow'}</label>
         <div class="margin-form">
             <select name="platformType">
                 <option value="test" {if $data_platformType eq "test"}selected{/if}>Plataforma sandbox de Flow</option>
@@ -50,7 +50,7 @@
             </div>
         {/if}
 
-        <label for="title">{l s='Nombre del medio de pago' mod='flowpaymentwp'}</label>
+        <label for="title">{l s='Nombre del medio de pago' mod='flowpaymentflow'}</label>
 
         <div class="margin-form"><input type="text" size="60" id="title" name="title" maxsize="100"
                                         value="{$data_title}" placeholder="Ingrese el nombre que se mostrará al usuario"/></div>
@@ -59,17 +59,8 @@
                 <p>{$errors.apiKey}</p>
             </div>
         {/if}
-        <label for="privateKey">{l s='Llave integracion seguridad (Api Key)' mod='flowpaymentwp'}</label>
+        <label for="apiKey">{l s='Llave integracion seguridad (Api Key)' mod='flowpaymentflow'}</label>
         <div class="margin-form"><input type="text" size="40" name="apiKey" value="{$data_apiKey}"/></div>
-
-        {if isset($errors.privateKey)}
-            <div class="error">
-                <p>{$errors.privateKey}</p>
-            </div>
-        {/if}
-        <label for="secretKey">{l s='Llave privada Flow (Secret Key)' mod='flowpaymentwp'}</label>
-
-        <div class="margin-form"><input type="text" size="40" name="privateKey" value="{$data_privateKey}"/></div>
         
         {if isset($errors.additional)}
             <div class="error">
@@ -77,7 +68,7 @@
             </div>
         {/if}
 
-        <label for="additional">{l s='Cobro adicional (en %)' mod='flowpaymentwp'}</label>
+        <label for="additional">{l s='Cobro adicional (en %)' mod='flowpaymentflow'}</label>
 
         <div class="margin-form"><input type="text" size="5" id="additional" name="additional"
                                         value="{$data_additional}"/></div>
@@ -87,7 +78,7 @@
                 <p>{$errors.logoSmall}</p>
             </div>
         {/if}
-		<label for="logoSmall">{l s='Logo que se mostrará' mod='flowpaymentwp'}</label>
+		<label for="logoSmall">{l s='Logo que se mostrará' mod='flowpaymentflow'}</label>
 
         <div class="margin-form"><img src="{$data_logoSmall}"/><input type="file" name="logoSmall" /></div>
         
@@ -99,14 +90,14 @@
 
         {if isset($return_url)}
 
-            <label for="additional">{l s='URL de retorno' mod='flowpaymentwp'}</label>
+            <label for="additional">{l s='URL de retorno' mod='flowpaymentflow'}</label>
             <div class="margin-form">
                 <input type="text" size="60" id="returnUrl" name="returnUrl" value="{$return_url}"/>
             </div>
         {/if}
 
         <center>
-            <input type="submit" name="flow_updateSettings" value="{l s='Save Settings' mod='flowpaymentwp'}"
+            <input type="submit" name="flow_updateSettings" value="{l s='Save Settings' mod='flowpaymentflow'}"
                        class="button" style="cursor: pointer; display:"/>
         </center>
     </fieldset>

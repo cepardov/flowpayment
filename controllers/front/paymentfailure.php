@@ -1,6 +1,6 @@
 <?php
 
-class FlowPaymentWPPaymentFailureModuleFrontController extends ModuleFrontController{
+class FlowPaymentFlowPaymentFailureModuleFrontController extends ModuleFrontController{
 
 
     public function __construct(){
@@ -13,6 +13,6 @@ class FlowPaymentWPPaymentFailureModuleFrontController extends ModuleFrontContro
 
         parent::initContent();
 
-        $this->setTemplate('module:flowpaymentwp/views/templates/front/payment_failure.tpl');
+        $this->setTemplate('module:flowpaymentflow/views/templates/front/payment_failure.tpl');
     }
 }

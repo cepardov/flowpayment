@@ -1,6 +1,6 @@
 <?php
 
-class FlowPaymentWPCouponModuleFrontController extends ModuleFrontController{
+class FlowPaymentFlowCouponModuleFrontController extends ModuleFrontController{
 
     public function __construct(){
         parent::__construct();
@@ -10,6 +10,6 @@ class FlowPaymentWPCouponModuleFrontController extends ModuleFrontController{
 
     public function initContent(){
         parent::initContent();
-        $this->setTemplate('module:flowpaymentwp/views/templates/front/coupon.tpl');
+        $this->setTemplate('module:flowpaymentflow/views/templates/front/coupon.tpl');
     }
 }

@@ -1,42 +1,42 @@
 <?php
 /**
- * 2018 Tuxpan
+ * 2022 Tuxpan
  * Clase de módulo de pago Prestashop de Flow
  *
  *  @author flow.cl
- *  @copyright  2018 Tuxpan
- *  @version: 2.0
+ *  @copyright  2022 Tuxpan
+ *  @version: 3.0.1
  *  @Email: soporte@tuxpan.com
  *  @Date: 15-05-2018 11:00
  *  @Last Modified by: Tuxpan
- *  @Last Modified time: 15-05-2018 11:00
+ *  @Last Modified time: 25-04-2022 11:00
  */
 
 if (!defined('_PS_VERSION_')) {
     exit;
 }
 
-include_once(_PS_MODULE_DIR_ . 'flowpaymentwp/lib-flow/FlowApiWP.class.php');
+include_once(_PS_MODULE_DIR_ . 'flowpaymentflow/lib-flow/FlowApiFlow.class.php');
 use PrestaShop\PrestaShop\Core\Payment\PaymentOption;
 
-class FlowPaymentWP extends PaymentModule
+class FlowPaymentFlow extends PaymentModule
 {
     protected $errors = array();
     protected $paymentMediumName;
     
     public function __construct()
     {
-        $this->paymentMediumName = 'webpay';
-        $this->name = 'flowpaymentwp';
-        $this->friendlyPaymentMediumName = 'Pago con Webpay';
+        $this->paymentMediumName = 'flow';
+        $this->name = 'flowpaymentflow';
+        $this->friendlyPaymentMediumName = 'Pago con la pasarela de Flow';
 
         parent::__construct();
         
-        $this->displayName = $this->l(utf8_encode('Webpay'));
-        $this->description = $this->l(utf8_encode('Pago con Flow usando Webpay'));
+        $this->displayName = $this->l(utf8_encode('Pago usando Flow'));
+        $this->description = $this->l(utf8_encode('Pago con Flow'));
         
         $this->author = 'Flow';
-        $this->version = '2.0.1';
+        $this->version = '3.0.1';
         $this->tab = 'payments_gateways';
         $this->ps_versions_compliancy = array('min' => '1.7', 'max' => _PS_VERSION_);
         
@@ -52,7 +52,7 @@ class FlowPaymentWP extends PaymentModule
         if (!parent::install() || !$this->registerHook('paymentOptions') || !$this->registerHook('paymentReturn')) {
             return false;
         }
-
+        Configuration::updateValue('FLOW_PAYMENT_VERSION', $this->version);
         if(!Configuration::get('FLOW_PAYMENT_PENDING')){
             $orderState = new OrderState();
             $orderState->name = array();
@@ -86,12 +86,11 @@ class FlowPaymentWP extends PaymentModule
             return false;
         }
         
-        Configuration::deleteByName('FLOW_WP_TITLE');
-        Configuration::deleteByName('FLOW_WP_PLATFORM');
-        Configuration::deleteByName('FLOW_WP_ADDITIONAL');
-        Configuration::deleteByName('FLOW_WP_APIKEY');
-        Configuration::deleteByName('FLOW_WP_RETURN_URL');
-        Configuration::deleteByName('FLOW_WP_PRIVATEKEY');
+        Configuration::deleteByName('FLOW_TITLE');
+        Configuration::deleteByName('FLOW_PLATFORM');
+        Configuration::deleteByName('FLOW_ADDITIONAL');
+        Configuration::deleteByName('FLOW_APIKEY');
+        Configuration::deleteByName('FLOW_RETURN_URL');
         
         return true;
     }
@@ -110,9 +109,9 @@ class FlowPaymentWP extends PaymentModule
         $recargo = $this->getRecargo();
      
         $externalOption = new PaymentOption();
-        $externalOption->setCallToActionText("Flow - ".Configuration::get('FLOW_WP_TITLE'))
+        $externalOption->setCallToActionText("Flow - ".Configuration::get('FLOW_TITLE'))
         ->setAdditionalInformation($recargo)
-        ->setAction($this->context->link->getModuleLink('flowpaymentwp', 'create', array()))
+        ->setAction($this->context->link->getModuleLink('flowpaymentflow', 'create', array()))
         ->setLogo($this->getLogo());
         return $externalOption;
     }
@@ -125,12 +124,11 @@ class FlowPaymentWP extends PaymentModule
         
         if (Tools::getIsset('flow_updateSettings')) {
             $isSubmitted = true;
-            Configuration::updateValue('FLOW_WP_TITLE', Tools::getValue('title'));
-            Configuration::updateValue('FLOW_WP_PLATFORM', Tools::getValue('platformType'));
-            Configuration::updateValue('FLOW_WP_ADDITIONAL', Tools::getValue('additional'));
-            Configuration::updateValue('FLOW_WP_APIKEY', Tools::getValue('apiKey'));
-            Configuration::updateValue('FLOW_WP_PRIVATEKEY', Tools::getValue('privateKey'));
-            Configuration::updateValue('FLOW_WP_RETURN_URL', Tools::getValue('returnUrl'));
+            Configuration::updateValue('FLOW_TITLE', Tools::getValue('title'));
+            Configuration::updateValue('FLOW_PLATFORM', Tools::getValue('platformType'));
+            Configuration::updateValue('FLOW_ADDITIONAL', Tools::getValue('additional'));
+            Configuration::updateValue('FLOW_APIKEY', Tools::getValue('apiKey'));
+            Configuration::updateValue('FLOW_RETURN_URL', Tools::getValue('returnUrl'));
             $hasFile = false;
             if (isset($_FILES['logoSmall'])) {
                 $file = $_FILES['logoSmall'];
@@ -142,7 +140,7 @@ class FlowPaymentWP extends PaymentModule
                 }
 
                 if($filename != '') {
-                    Configuration::updateValue('FLOW_WP_IMAGE', $filename);
+                    Configuration::updateValue('FLOW_IMAGE', $filename);
                 }
             }
             $this->setModuleSettings();
@@ -151,7 +149,7 @@ class FlowPaymentWP extends PaymentModule
             $this->setModuleSettings();
         }
         
-        $medio_pago = "webpay";
+        $medio_pago = "flow";
         
         $noErrors = empty($this->errors);
         
@@ -160,7 +158,6 @@ class FlowPaymentWP extends PaymentModule
             'post_url' => Tools::htmlentitiesUTF8($_SERVER['REQUEST_URI']),
             'data_platformType' => $this->platformType,
             'data_apiKey' => $this->apiKey,
-            'data_privateKey' => $this->privateKey,
             'data_additional' => $this->additional,
             'data_title' => $this->title,
             'version' => $this->version,
@@ -169,29 +166,21 @@ class FlowPaymentWP extends PaymentModule
             'data_logoSmall' => $this->getLogo(),
             'medio_pago' => $medio_pago,
             'noErrors' => $noErrors,
-            'isSubmitted' => $isSubmitted
+            'isSubmitted' => $isSubmitted,
+            'return_url' => $this->returnUrl
         );
 
-        if(!$this->isWebpay() && !$this->isOnePay() && !$this->isMach()){
-            $vars['return_url'] = $this->returnUrl;
-        }
-        
         $this->context->smarty->assign($vars);
         return $this->display($this->name, 'views/templates/admin/config.tpl');
     }
     
     private function setModuleSettings()
     {
-        $this->title = !empty(Configuration::get('FLOW_WP_TITLE')) ? Configuration::get('FLOW_WP_TITLE') : utf8_encode($this->friendlyPaymentMediumName);
-        $this->apiKey = Configuration::get('FLOW_WP_APIKEY');
-        $this->privateKey = Configuration::get('FLOW_WP_PRIVATEKEY');
-        $this->platformType = Configuration::get('FLOW_WP_PLATFORM');
-        $this->additional = (float)Configuration::get('FLOW_WP_ADDITIONAL');
-
-        if(!$this->isWebpay() && !$this->isOnePay()){
-            
-            $this->returnUrl = Configuration::get('FLOW_WP_RETURN_URL');
-        }
+        $this->title = !empty(Configuration::get('FLOW_TITLE')) ? Configuration::get('FLOW_TITLE') : utf8_encode($this->friendlyPaymentMediumName);
+        $this->apiKey = Configuration::get('FLOW_APIKEY');
+        $this->platformType = Configuration::get('FLOW_PLATFORM');
+        $this->additional = (float)Configuration::get('FLOW_ADDITIONAL');
+        $this->returnUrl = Configuration::get('FLOW_RETURN_URL');
     }
     
     private function checkModuleRequirements()
@@ -211,9 +200,6 @@ class FlowPaymentWP extends PaymentModule
         if ($this->apiKey == '') {
             $this->errors['apiKey'] = 'Debe ingresar su llave de integración';
         }
-        if ($this->privateKey == '') {
-            $this->errors['privateKey'] = 'Debe ingresar su llave privada flow';
-        }
         
     }
     
@@ -221,7 +207,7 @@ class FlowPaymentWP extends PaymentModule
     {
         $str = '';
         $cart = $this->context->cart;
-        $recargo = (float)Configuration::get('FLOW_WP_ADDITIONAL');
+        $recargo = (float)Configuration::get('FLOW_ADDITIONAL');
         
         if (!is_null($recargo) && is_numeric($recargo)  && $recargo > 0) {
             $monto_orden = (int)($cart->getOrderTotal(true, Cart::BOTH));
@@ -230,39 +216,9 @@ class FlowPaymentWP extends PaymentModule
         }
         return $str;
     }
-    
-    private function getFlowData()
-    {
-        $cart = $this->context->cart;
-        $cartId = $cart->id;
-        $customer = $this->context->customer;
-        $recargo = (float)Configuration::get('FLOW_WP_ADDITIONAL');
-        $currencyId = (int)$cart->id_currency;
-        $currency = Currency::getCurrencyInstance($currencyId);
-        $currencyName = $currency->iso_code;
-        $ordenCompra = $cartId;
-        $monto_orden = (int)($cart->getOrderTotal(true, Cart::BOTH));
-        $monto_adicional = round(($monto_orden * $recargo)/100.0);
-        $monto = $monto_orden + $monto_adicional;
-        $concepto = html_entity_decode(
-            'Orden #'.$ordenCompra.' de '.Configuration::get('PS_SHOP_NAME'),
-            ENT_QUOTES,
-            'UTF-8'
-            );
-        $id_producto = $customer->email."_".$cart->id;
-        $email = $customer->email;
-        $modulo = $this->name;
-        $data_action = Context::getContext()->link->getModuleLink('flowpaymentwp', 'create', array());
-        $data_request = "oc=$ordenCompra&monto=$monto&concepto=$concepto&id_producto=$id_producto&email=$email&".
-            "modulo=$modulo&moneda=$currencyName";
-        return array(
-            'flow_action' => $data_action,
-            'flow_request' => $data_request
-        );
-    }
 
     private function getLogo() {
-        $customImage = Configuration::get('FLOW_WP_IMAGE');
+        $customImage = Configuration::get('FLOW_IMAGE');
         $defaultImage = "logo-small.png";
 
         return Tools::getShopDomainSsl(true, true) . __PS_BASE_URI__ ."modules/{$this->name}/views/img/".
@@ -299,8 +255,8 @@ class FlowPaymentWP extends PaymentModule
     }
 
     private function getPerfectSize($sourceImage, $size) {
-        $perfectWidth = 85;
-        $perfectHeight = 24;
+        $perfectWidth = 35;
+        $perfectHeight = 10;
 
         $width = $size[0];
         $height = $size[1];
@@ -372,63 +328,5 @@ class FlowPaymentWP extends PaymentModule
                 }
         }
         return $filename;
-    }
-
-    public function getPaymentMethod(){
-        
-        switch($this->paymentMediumName){
-            
-            case 'webpay': {
-                $paymentMethod = 1;
-                break;
-            }
-
-            case 'servipag': {
-                $paymentMethod = 2;
-                break;
-            }
-
-            case 'multicaja': {
-                $paymentMethod = 3;
-                break;
-            }
-
-            case 'onepay': {
-                $paymentMethod = 5;
-                break;
-            }
-
-            case 'flow': {
-                $paymentMethod = 9;
-                break;
-            }
-            case 'webpay3c': {
-                $paymentMethod = 13;
-                break;
-            }
-            case 'mach': {
-                $paymentMethod = 15;
-                break;
-            }
-
-            default: {
-                $paymentMethod = 9;
-                break;
-            }
-        }
-
-        return $paymentMethod;
-    }
-
-    public function isWebpay(){
-        return strtolower($this->paymentMediumName) == 'webpay' || strtolower($this->paymentMediumName) == 'webpay3c';
-    }
-    
-    public function isOnePay(){
-        return strtolower($this->paymentMediumName) == 'onepay';
-    }
-
-    public function isMach(){
-        return strtolower($this->paymentMediumName) == 'mach';
     }
 }
