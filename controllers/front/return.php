@@ -69,6 +69,11 @@ class FlowPaymentFlowReturnModuleFrontController extends ModuleFrontController
 
                 // Status 1
                 if ($this->userCanceledPayment($status, $response)) {
+                    if ($order->getCurrentState() == $orderStatusPending) {
+                        PrestaShopLogger::addLog("The confirmation page was not reached. Setting the order as rejected.");
+                        $order->setCurrentState($orderStatusCanceled);
+                    }
+
                     PrestaShopLogger::addLog('The user canceled the payment. Redirecting to the checkout...');
                     $this->restoreCart($order->id);
                     //Redirecting to the checkout
