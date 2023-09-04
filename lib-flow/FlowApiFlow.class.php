@@ -89,12 +89,6 @@ class FlowApiFlow
                 break;
                 
             }
-            default:
-            {
-                $message = "Ha ocurrido un error en pago" ;
-                break;
-
-            }
         }
         $flow_code = $flowError["code"];
         if($flow_code === 104){
