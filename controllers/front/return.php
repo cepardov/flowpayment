@@ -66,9 +66,7 @@ class FlowPaymentFlowReturnModuleFrontController extends ModuleFrontController
 
 
             if ($order->valid || $order->getCurrentState() == $orderStatusPending ) {
-
-                // Status 1
-                if ($this->userCanceledPayment($status, $response)) {
+                if ($this->userCanceledPayment($status, $response)) { // Status 1
                     if ($order->getCurrentState() == $orderStatusPending) {
                         PrestaShopLogger::addLog("The confirmation page was not reached. Setting the order as rejected.");
                         $order->setCurrentState($orderStatusCanceled);
@@ -78,7 +76,7 @@ class FlowPaymentFlowReturnModuleFrontController extends ModuleFrontController
                     $this->restoreCart($order->id);
                     //Redirecting to the checkout
                     Tools::redirect('order');
-                }else if ($this->isPaidInFlow($status)) {
+                }else if ($this->isPaidInFlow($status)) { // Status 2
                     if ($order->getCurrentState() == $orderStatusPending) {
                         PrestaShopLogger::addLog("The confirmation page was not reached. Setting the order as paid.");
                         $order->setCurrentState($orderStatusPaid);
@@ -86,7 +84,7 @@ class FlowPaymentFlowReturnModuleFrontController extends ModuleFrontController
 
                     PrestaShopLogger::addLog('Everything went right. Redirecting to the success page.');
                     $this->redirectToSuccess($cart, $order);
-                } else if ($this->isRejectedInFlow($status)) {
+                } else if ($this->isRejectedInFlow($status)) { // Status 3
                     if ($order->getCurrentState() == $orderStatusPending) {
                         PrestaShopLogger::addLog("The confirmation page was not reached. Setting the order as rejected.");
                         $order->setCurrentState($orderStatusRejected);
@@ -98,6 +96,18 @@ class FlowPaymentFlowReturnModuleFrontController extends ModuleFrontController
                     //$this->context->smarty->assign(array('msg' => $this->l('test')));
                     //PrestaShopLogger::addLog('Payment error.');
                     //Tools::redirect('index.php?controller=order&step=3&typeReturn=failure');
+                } else if ($this->isCanceledInFlow($status)) { // Status 4
+                    if ($order->getCurrentState() == $orderStatusPending) {
+                        PrestaShopLogger::addLog("The confirmation page was not reached. Setting the order as rejected.");
+                        $order->setCurrentState($orderStatusCanceled);
+                    }
+
+                    PrestaShopLogger::addLog('The user canceled the payment. Redirecting to the checkout...');
+                    $this->restoreCart($order->id);
+                    //Redirecting to the checkout
+                    Tools::redirect('order');
+                } else {
+                    throw new Exception("Error de estado de orden", 1);
                 }
             }
 
