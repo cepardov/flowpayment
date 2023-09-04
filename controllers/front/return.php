@@ -52,6 +52,8 @@ class FlowPaymentFlowReturnModuleFrontController extends ModuleFrontController
             $cart = new Cart(Cart::getCartIdByOrderId($order->id));
             
             $status = $response["status"];
+            PrestaShopLogger::addLog('Status: '.json_encode($status));
+
             $amount = (int)$response["amount"];
             $recharge = (float)Configuration::get('FLOW_ADDITIONAL');
             $orderTotal = (int)($cart->getOrderTotal(true, Cart::BOTH));
@@ -63,17 +65,38 @@ class FlowPaymentFlowReturnModuleFrontController extends ModuleFrontController
             $orderStatusRejected = (int)Configuration::get('PS_OS_ERROR');
             $orderStatusCanceled = (int)Configuration::get('PS_OS_CANCELED');
 
+
+            switch ($status) {
+                case 1:
+                    PrestaShopLogger::addLog('Status: ' + $status);
+                    break;
+
+                case 2:
+                    PrestaShopLogger::addLog('Status: ' + $status);
+                    break;
+
+                case 3:
+                    PrestaShopLogger::addLog('Status: ' + $status);
+                    break;
+
+                case 4:
+                    PrestaShopLogger::addLog('Status: ' + $status);
+                    break;
+
+                default:
+                    PrestaShopLogger::addLog('Status Default: ' + $status);
+            }
+
+
+
+            // ========= nuevo
+
             if ($this->userCanceledPayment($status, $response)) {
                 PrestaShopLogger::addLog('The user canceled the payment. Redirecting to the checkout...');
                 $this->restoreCart($order->id);
                 //Redirecting to the checkout
                 Tools::redirect('order');
             }
-
-            /*if($this->isTesting($response)){
-                PrestaShopLogger::addLog('Testing environment detected, setting up simulation...');
-                $this->setUpProductionEnvSimulation($status, $response);
-            }*/
 
             $order = new Order(Order::getOrderByCartId($cart->id));
 
