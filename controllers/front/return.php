@@ -82,6 +82,7 @@ class FlowPaymentFlowReturnModuleFrontController extends ModuleFrontController
                         $order->setCurrentState($orderStatusRejected);
                     }
                     $this->restoreCart($order->id);
+                    $this->context->smarty->assign(array('msg' => $this->l('test')));
                     PrestaShopLogger::addLog('Payment error.');
                     Tools::redirect('index.php?controller=order&step=3&typeReturn=failure');
                 }
