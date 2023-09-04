@@ -65,28 +65,6 @@ class FlowPaymentFlowReturnModuleFrontController extends ModuleFrontController
             $orderStatusCanceled = (int)Configuration::get('PS_OS_CANCELED');
 
 
-            switch ($status) {
-                case 1:
-                    PrestaShopLogger::addLog('Status: ' + $status);
-                    break;
-
-                case 2:
-                    PrestaShopLogger::addLog('Status: ' + $status);
-                    break;
-
-                case 3:
-                    PrestaShopLogger::addLog('Status: ' + $status);
-                    break;
-
-                case 4:
-                    PrestaShopLogger::addLog('Status: ' + $status);
-                    break;
-
-                default:
-                    PrestaShopLogger::addLog('Status Default: ' + $status);
-            }
-
-
 
             // ========= nuevo
 
