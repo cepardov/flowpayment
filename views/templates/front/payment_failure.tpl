@@ -8,8 +8,5 @@
         <div class="col-md-12">
             <p>{l s='Ha ocurrido un error procesando su pago. Por favor, intentelo de nuevo.'}</p>
         </div>
-        <div class="col-md-12 cart-content-btn">
-            <a href="{$cart_url}" class="btn btn-primary"><i class="material-icons rtl-no-flip">&#xE876;</i>Ir a carro de compras</a>
-        </div>
     </div>
 {/block}

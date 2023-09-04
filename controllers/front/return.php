@@ -185,13 +185,11 @@ class FlowPaymentFlowReturnModuleFrontController extends ModuleFrontController
     
     private function redirectToSuccess($cart, $order)
     {
-        PrestaShopLogger::addLog('Redireccionando compra correcta...');
         Tools::redirect('index.php?controller=order-confirmation&id_cart='.$cart->id.'&id_module='.$this->module->id.'&id_order='.$order->id.'&key='.$cart->secure_key);
     }
     
     private function redirectToFailure($params = array())
     {
-        PrestaShopLogger::addLog('Redireccionando compra erronea...');
         Tools::redirect($this->context->link->getModuleLink('flowpaymentflow', 'paymentfailure', $params));
     }
     

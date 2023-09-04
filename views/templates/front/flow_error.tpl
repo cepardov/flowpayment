@@ -13,8 +13,5 @@
                 </div>      
             {/if}
         </div>
-        <div class="col-md-12 cart-content-btn">
-            <a href="{$cart_url}" class="btn btn-primary"><i class="material-icons rtl-no-flip">&#xE876;</i>Ir a carro de compras</a>
-        </div>
     </div>
 {/block}
