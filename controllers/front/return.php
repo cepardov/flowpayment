@@ -52,7 +52,6 @@ class FlowPaymentFlowReturnModuleFrontController extends ModuleFrontController
             $cart = new Cart(Cart::getCartIdByOrderId($order->id));
             
             $status = $response["status"];
-            PrestaShopLogger::addLog('Status: '.json_encode($status));
 
             $amount = (int)$response["amount"];
             $recharge = (float)Configuration::get('FLOW_ADDITIONAL');
