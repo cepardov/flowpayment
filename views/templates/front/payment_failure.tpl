@@ -6,7 +6,10 @@
             <h3 class="h3 card-title">{l s='Error en el pago'}</h3>
         </div>
         <div class="col-md-12">
-            <p>{l s='Ha ocurrido un error procesando su pago. Por favor, intentelo de nuevo.'}</p>
+            <div class="alert alert-danger" role="alert">
+                {l s='Ha ocurrido un error procesando su pago. Por favor, intentelo de nuevo.'}
+                </div>
+            </div>
         </div>
     </div>
 {/block}
